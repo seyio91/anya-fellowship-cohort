@@ -1,0 +1,42 @@
+name: Smart Contract Artifacts Release
+
+on:
+  push: 
+    branches: 
+      - deploy  
+    paths:
+      - "task2/**"  
+
+env:
+  DEPLOY_DIR: "task2/"
+  ACCOUNT_KEY: ${{ secrets.ACCOUNT_KEY }}
+
+jobs:
+  build: 
+    name: Deploy HardHat
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Use Node.js 14.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.x 
+
+    - name: Deploy Contract
+      run: |
+        cd $DEPLOY_DIR
+        npm install
+        npx hardhat compile
+
+    - name: Compress Artifacts
+      run: |
+        cd $DEPLOY_DIR
+        zip -r artifact.zip artifacts/
+        
+    - name: Release Artifacts
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: $DEPLOY_DIR/artifact.zip
