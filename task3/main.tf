@@ -24,7 +24,7 @@ resource "aws_security_group" "security_group" {
 resource "aws_instance" "my-instance" {
   vpc_security_group_ids = [aws_security_group.security_group.id]
   ami           = data.aws_ami.ubuntu_server.id
-  instance_type = "t2.medium" ## Free tier
+  instance_type = "t2.medium"
   user_data = templatefile("scripts/ec2.sh", {personal_access_token = var.personal_access_token})
 	tags = {
 		Name = "GitHub-Runner"	
