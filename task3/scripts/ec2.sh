@@ -4,14 +4,14 @@ cat <<EOF >/home/ubuntu/user-data.sh
 wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
 chmod +x ./jq
 sudo cp jq /usr/bin
-curl --request POST 'https://api.github.com/repos/seyio91/anya-fellowship-cohort/actions/runners/registration-token' --header "Authorization: token ${personal_access_token}" > output.txt
+curl --request POST 'https://api.github.com/repos/${github_user}/${github_repo}/actions/runners/registration-token' --header "Authorization: token ${personal_access_token}" > output.txt
 runner_token=\$(jq -r '.token' output.txt)
 mkdir ~/actions-runner
 cd ~/actions-runner
 curl -O -L https://github.com/actions/runner/releases/download/v2.292.0/actions-runner-linux-x64-2.292.0.tar.gz
 tar xzf ~/actions-runner/actions-runner-linux-x64-2.292.0.tar.gz
 rm ~/actions-runner/actions-runner-linux-x64-2.292.0.tar.gz
-~/actions-runner/config.sh --url https://github.com/seyio91/anya-fellowship-cohort/ --token \$runner_token --name "Github EC2 Runner" --unattended
+~/actions-runner/config.sh --url https://github.com/${github_user}/${github_repo}/ --token \$runner_token --name "Github EC2 Runner" --unattended
 ~/actions-runner/run.sh
 EOF
 cd /home/ubuntu
