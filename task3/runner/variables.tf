@@ -3,13 +3,21 @@ variable "aws_region" {
 }
 
 variable "personal_access_token"{
-  description = "personal token"
+  description = "github personal token"
 }
 
-variable "github_repo" {
+variable "github_user" {
   default = "seyio91"
 }
 
 variable "github_repo" {
   default = "anya-fellowship-cohort"
+}
+
+variable "instance_type" {
+  default = "t3.medium"
+}
+
+variable "runner_architecture" {
+  
 }

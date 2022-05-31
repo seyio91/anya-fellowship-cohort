@@ -10,5 +10,6 @@ artifacts
 # .github/workflows/
 # .gitignore
 task3/terraform.tfstate
+task3/terraform.tfstate.backup
 task3/.terraform/
 task3/.terraform.lock.hcl

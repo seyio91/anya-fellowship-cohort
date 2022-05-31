@@ -8,9 +8,9 @@ curl --request POST 'https://api.github.com/repos/${github_user}/${github_repo}/
 runner_token=\$(jq -r '.token' output.txt)
 mkdir ~/actions-runner
 cd ~/actions-runner
-curl -O -L https://github.com/actions/runner/releases/download/v2.292.0/actions-runner-linux-x64-2.292.0.tar.gz
-tar xzf ~/actions-runner/actions-runner-linux-x64-2.292.0.tar.gz
-rm ~/actions-runner/actions-runner-linux-x64-2.292.0.tar.gz
+curl -O -L https://github.com/actions/runner/releases/download/v2.292.0/${download_url}
+tar xzf ~/actions-runner/${download_url}
+rm ~/actions-runner/${download_url}
 ~/actions-runner/config.sh --url https://github.com/${github_user}/${github_repo}/ --token \$runner_token --name "Github EC2 Runner" --unattended
 ~/actions-runner/run.sh
 EOF
