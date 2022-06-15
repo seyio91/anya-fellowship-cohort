@@ -1,0 +1,8 @@
+polkadot_data_dir: /data
+polkadot_dependencies:
+  - make
+  - clang
+  - pkg-config
+  - libssl-dev
+  - build-essential
+  - ntp

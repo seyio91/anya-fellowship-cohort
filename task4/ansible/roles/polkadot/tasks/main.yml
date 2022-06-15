@@ -1,0 +1,60 @@
+---
+# Install Rust
+- name: Install Rustc
+  apt:
+    name: rustc
+    state: present
+    update_cache: yes
+
+# polkadot dependency sudo apt install make clang pkg-config libssl-dev build-essential ntp
+- name: Install the Polkadot Dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ polkadot_dependencies }}"
+
+- name: Ensure polkadot data directory exist
+  file:
+    path: "{{ polkadot_data_dir }}"
+    state: directory
+
+# confirm Ntp installation with timedatectl
+- name: Verify NTP
+  shell: timedatectl
+
+- name: Import the security@parity.io GPG key
+  shell: |
+    gpg --recv-keys --keyserver hkps://keys.mailvelope.com 9D4B2B6EB8F97156D19669A9FF0812D491B96798
+    gpg --export 9D4B2B6EB8F97156D19669A9FF0812D491B96798 | sudo tee /usr/share/keyrings/parity.gpg
+# Breaks with Python3 when using apt_repository module
+
+- name: Add the Parity repository and update the package index
+  shell: |
+    echo 'deb [signed-by=/usr/share/keyrings/parity.gpg] https://releases.parity.io/deb release main' | sudo tee /etc/apt/sources.list.d/parity.list
+    
+- name: Install the `parity-keyring` package to ensure that the GPG key used by apt remains up-to-date
+  apt:
+    name: parity-keyring
+    state: present
+    update_cache: yes
+
+- name: Install Polkadot
+  apt:
+    name: polkadot
+    state: present
+
+- name: Ensure Systemd Directory Exists
+  file:
+    path: '/etc/systemd/system'
+    state: directory
+
+# create polkadot node configurations
+- name: Copy systemd init file
+  template:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - polkadot-collatornode.service
+    - polkadot-rpcnode.service
+    - polkadot-bootnode.service
+

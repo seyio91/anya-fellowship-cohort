@@ -1,0 +1,6 @@
+---
+- hosts: all #all
+  become: true
+  roles:
+    - polkadot
+
