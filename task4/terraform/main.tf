@@ -6,6 +6,7 @@ locals {
   boot_nodes        = ["${local.project}-bootnode-1", "${local.project}-bootnode-2"]
   rpc_nodes         = ["${local.project}-rpcnode-1", "${local.project}-rpcnode-2"]
   vpc_cidr          = "10.0.0.0/16"
+  ssh_key           = "${local.project}-key"
   tags = {
     Terraform   = "true"
     Project     = local.project
@@ -59,11 +60,11 @@ resource "tls_private_key" "key" {
 }
 
 resource "aws_key_pair" "key_pair" {
-  key_name   = "key"
+  key_name   = local.ssh_key
   public_key = tls_private_key.key.public_key_openssh
 
   provisioner "local-exec" {
-    command = "echo '${tls_private_key.key.private_key_pem}' > ./key.pem"
+    command = "echo '${tls_private_key.key.private_key_pem}' > ./${local.ssh_key}.pem"
   }
 }
 
