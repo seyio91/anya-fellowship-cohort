@@ -5,6 +5,8 @@ This repository Provisions Polkadot Bootnodes, rpc nodes and Collator nodes
 
 ### Create Amazon Machine Image
 
+Update `ami.json` with access secrets keys
+
 ```
 cd packer
 packer build ami.json
