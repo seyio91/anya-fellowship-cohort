@@ -1,0 +1,162 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "application.fullname" $ }}
+  labels:
+    {{- include "application.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "application.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "application.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "application.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+      {{- if .Values.secretMounts }}
+        - name: secretmount
+          secret:
+            defaultMode: 420
+            items:
+            {{- range .Values.secretMounts }}
+            - key: {{ .mountFileName }}
+              path: {{ .mountFileName }}
+            {{- end }}
+            secretName: "{{ include "application.name" . }}-secret"
+      {{- end }}
+      {{- range .Values.hostPath }}
+        - name: {{ .name }}
+          hostPath:
+            path: {{ .path }}
+      {{- end }}
+      {{- with .Values.awsSecrets }}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ include "application.secretsProviderName" $ }}
+      {{- end }}
+      {{- if .Values.configFiles }}
+        - name: config
+          configMap:
+            name: "{{ include "application.fullname" . }}-mount"
+            items:
+            {{- range .Values.configFiles }}
+            - key: {{ .mountFileName }}
+              path: {{ .mountFileName }}
+            {{- end }}
+      {{- end }}      
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.repository }}:{{ .Values.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          volumeMounts:
+          {{- range .Values.secretMounts }}
+          - name: secretmount
+            mountPath: {{ .mountPath }}
+            subPath: {{ .mountFileName }}
+            readOnly: true
+          {{- end }}
+          {{- range .Values.hostPath }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+          {{- end }}
+          {{- if .Values.awsSecrets }}
+          - mountPath: /mnt/secrets-store
+            name: secrets-store-inline
+            readOnly: true
+          {{- end }}
+          {{- range .Values.configFiles }}
+          - name: config
+            mountPath: {{ .mountPath }}
+            subPath: {{ .mountFileName }}
+            readOnly: true
+          {{- end }}
+          env:
+            - name: APP_NAME
+              value: {{ include "application.name" . }}
+          {{- range $k, $v := .Values.env }}
+            - name: {{ $k | quote }}
+              value: {{ $v | quote }}
+          {{- end }}
+          {{- range $k, $v := .Values.awsSecrets }}
+            - name: {{ $k | quote }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ $k | quote }}
+                  name: "{{ include "application.secretsProviderName" $ }}"
+          {{- end }}        
+          ports:
+            {{- range .Values.service.servicePorts }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ .protocol }}
+            {{- end }}
+          {{- if .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}    
+          {{- end }}
+          {{- if .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
+          {{- end }} 
+          {{- if .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}      
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.argsOverride }}
+          args: {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.commandOverride }}
+          command: {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- range .Values.subcontainers }}
+        - name: {{ .container }}
+          image: "{{ .repository }}:{{ .tag | default "latest" }}"
+          {{- with .argsOverride }}
+          args: {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .commandOverride }}
+          command: {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .env }}
+          env:
+          {{- range $k, $v := . }}
+            - name: {{ $k | quote }}
+              value: {{ $v | quote }}
+          {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,59 @@
+replicaCount: 1
+
+repository: parity/polkadot
+tag: "latest"
+
+commandOverride: [polkadot]
+argsOverride: [
+  "--collator",
+  "--ws-port",
+  "9944",
+  "--chain=kusama",
+  "--listen-addr=/ip4/0.0.0.0/tcp/30334",
+  "--public-addr=/ip4/0.0.0.0/tcp/30334",
+  "--execution=wasm", 
+  "--rpc-methods=unsafe",  
+  "-- --execution=wasm",  
+  "--listen-addr=/ip4/0.0.0.0/tcp/30333", 
+  "--public-addr=/ip4/0.0.0.0/tcp/30333"
+]
+
+serviceAccount:
+  create: true
+
+service:
+  type: ClusterIP
+  servicePorts:
+    - port: 9933
+      containerPort: 9933
+      protocol: TCP
+      name: rpc-port
+    - port: 30333
+      containerPort: 30333
+      protocol: TCP
+      name: node-port
+    - port: 30334
+      containerPort: 30334
+      protocol: TCP
+      name: node2-port
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+
+autoscaling:
+  enabled: false
+
+subcontainers:
+- container: rpc-kusama
+  repository: parity/substrate-api-sidecar
+  env:
+    SAS_SUBSTRATE_WS_URL: "ws://localhost:9944"
+  

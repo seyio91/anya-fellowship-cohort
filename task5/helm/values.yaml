@@ -1,0 +1,136 @@
+# Default values for application.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+configmap:
+  config.yaml: |
+    --
+
+configFiles:
+  # - mountPath: "/app/file.xml"
+  #   mountFileName: "file.xml"
+  #   fileName: config/file.xml
+secretMounts:
+  # secret name should be application-name-secrets. using application-secrets till a best method for modifying secrets is found
+  # - mountPath: "/usr/share/test.jks"
+  #   mountFileName: "test.jks"
+hostPath:
+  # Host Path Munt
+  # - name: tmp
+  #   path: /tmp/tomcat # path on host
+  #   mountPath: /data/tomcat # path on pod
+
+# repository: xxxxxxxxxxxxx.dkr.ecr.us-east-2.amazonaws.com/sample-camel
+pullPolicy: Always
+# tag: "0.0.0-a5f2178f"
+env:
+#     SAMPLE_ENV_1: "1"
+#     SAMPLE_ENV_2: "2"
+#     SAMPLE_ENV_3: "3"
+
+awsSecrets: {}
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  # name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  servicePorts:
+    - port: 80
+      containerPort: 8080 # targetport
+      protocol: TCP
+      name: http
+      # service_disabled: true
+#     - port: 8000
+#       targetPort: 8000
+#       protocol: TCP
+#       name: grpc
+#       type: ClusterIP
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+      - paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  requests:
+    cpu: 256m
+    memory: 256Mi
+  limits:
+    cpu: 512m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  # minReplicas: 1
+  # maxReplicas: 100
+  # targetCPUUtilizationPercentage: 60
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# startupProbe: {}
+  # httpGet:
+  #   path: application-provider/actuator/health
+  #   port: http
+  # failureThreshold: 5
+  # periodSeconds: 60
+
+# livenessProbe: {}
+  # failureThreshold: 3
+  # httpGet:
+  #   path: /application-provider/actuator/health/liveness
+  #   port: 8080
+  #   scheme: HTTP
+  # initialDelaySeconds: 90
+  # periodSeconds: 10
+  # successThreshold: 1
+  # timeoutSeconds: 10
+
+# readinessProbe: {}
+  # failureThreshold: 3
+  # httpGet:
+  #   path: /application-provider/actuator/health/readiness
+  #   port: 8080
+  #   scheme: HTTP
