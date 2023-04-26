@@ -16,3 +16,5 @@ artifacts
 **/*.pem
 **/manifest.json
 **/.terraform.tfstate.lock.info
+newfile
+file2
